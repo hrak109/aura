@@ -1,0 +1,40 @@
+# Byte-compiled / Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Persistent credential base (CRITICAL SECURITY SHIELD)
+.env
+
+# Dynamically generated stream configs & binaries
+go2rtc.exe
+go2rtc.yaml
+go2rtc.log
+*.log
+custom_ips*.json
+
+# OS temporary files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Local IDE preferences
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# PyInstaller standalone compiler directories
+build/
+dist/
+.env*
+*.db
+
+# Virtual Environments
+venv/
+.venv/
+env/

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura by Haistellar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-image: 
+                radial-gradient(at 50% 0%, var(--accent-glow) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(15, 23, 42, 0.5) 0px, transparent 50%),
+                linear-gradient(rgba(18, 24, 38, 0.95), rgba(2, 6, 23, 1));
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        /* Accent Themes definition */
+        body.theme-emerald {
+            --accent-primary: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.35);
+            --accent-bg: rgba(16, 185, 129, 0.12);
+            --accent-border: rgba(16, 185, 129, 0.25);
+            --accent-text: #34d399;
+        }
+        body.theme-cyan {
+            --accent-primary: #06b6d4;
+            --accent-glow: rgba(6, 182, 212, 0.35);
+            --accent-bg: rgba(6, 182, 212, 0.12);
+            --accent-border: rgba(6, 182, 212, 0.25);
+            --accent-text: #22d3ee;
+        }
+        body.theme-violet {
+            --accent-primary: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.35);
+            --accent-bg: rgba(139, 92, 246, 0.12);
+            --accent-border: rgba(139, 92, 246, 0.25);
+            --accent-text: #a78bfa;
+        }
+        body.theme-amber {
+            --accent-primary: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.35);
+            --accent-bg: rgba(245, 158, 11, 0.12);
+            --accent-border: rgba(245, 158, 11, 0.25);
+            --accent-text: #fbbf24;
+        }
+
+        .cyber-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(148, 163, 184, 0.007) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(148, 163, 184, 0.007) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: center center;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Focus custom ring styling */
+        input[type="password"]:focus {
+            border-color: var(--accent-primary) !important;
+            box-shadow: 0 0 0 1px var(--accent-primary) !important;
+        }
+
+        /* Submit Button dynamic glow hover transitions */
+        .btn-submit {
+            background-color: var(--accent-primary) !important;
+            box-shadow: 0 0 20px var(--accent-glow) !important;
+        }
+        .btn-submit:hover {
+            filter: brightness(1.1) !important;
+            box-shadow: 0 0 30px var(--accent-glow) !important;
+        }
+        .btn-submit:active {
+            filter: brightness(0.9) !important;
+        }
+
+        /* Premium glass card custom glow hover */
+        .login-card:hover {
+            border-color: var(--accent-border) !important;
+            box-shadow: 0 0 40px rgba(2, 6, 23, 0.9), 0 0 30px var(--accent-glow) !important;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-100 flex items-center justify-center relative overflow-hidden px-4 theme-emerald">
+    <script>
+        // Immediate theme parsing to avoid visual flash on gateway portal
+        (function() {
+            const savedTheme = localStorage.getItem('wyze_system_theme') || 'emerald';
+            document.body.className = document.body.className.replace('theme-emerald', 'theme-' + savedTheme);
+        })();
+    </script>
+    
+    <!-- cybergrid overlay -->
+    <div class="cyber-grid"></div>
+
+    <!-- main glassmorphism card -->
+    <div class="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-9 shadow-2xl relative z-10 transition-all duration-500 group login-card">
+        
+        <!-- Glowing scan line overlay -->
+        <div class="absolute -top-px left-12 right-12 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent animate-pulse" style="background-image: linear-gradient(to right, transparent, var(--accent-primary), transparent)"></div>
+
+        <!-- Portal Header -->
+        <div class="flex flex-col items-center mb-9 text-center">
+            <!-- Pulsing lock icon -->
+            <div class="h-16 w-16 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-center mb-4 transition-all duration-500 shadow-inner relative" style="border-color: var(--accent-border)">
+                <svg class="h-6 w-6 text-[var(--accent-text)]" style="color: var(--accent-text)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                <div class="absolute inset-0 rounded-2xl bg-[var(--accent-bg)] animate-ping opacity-25" style="background-color: var(--accent-bg)"></div>
+            </div>
+            
+            <h1 class="text-3xl font-extrabold tracking-[0.2em] text-slate-100 transition-colors duration-300 uppercase">AURA</h1>
+            <span class="text-[10px] font-mono bg-[var(--accent-bg)] text-[var(--accent-text)] px-3 py-1 rounded-full border border-[var(--accent-border)] tracking-widest mt-2 uppercase font-semibold" style="background-color: var(--accent-bg); color: var(--accent-text); border-color: var(--accent-border)">BY HAISTELLAR</span>
+            <p class="text-[10px] font-mono tracking-[0.25em] text-slate-500 uppercase mt-4.5 font-bold">Host Authorized Gateway Only</p>
+        </div>
+
+        <!-- Login Form -->
+        <form action="/login" method="POST" class="space-y-6.5">
+            
+            {% if error %}
+            <!-- Error panel -->
+            <div class="bg-red-950/40 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl flex items-center space-x-3 text-xs font-mono animate-bounce">
+                <svg class="h-4 w-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <div>
+                <label for="password" class="block text-xs font-mono tracking-widest text-slate-400 uppercase mb-2.5 font-semibold">Matrix Access Code</label>
+                <div class="relative rounded-xl shadow-sm">
+                    <input type="password" name="password" id="password" required autofocus
+                           placeholder="••••••••" 
+                           class="block w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3.5 text-slate-100 placeholder-slate-600 focus:outline-none text-center tracking-[0.3em] font-mono text-base transition-all duration-300">
+                </div>
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-[var(--accent-primary)] text-slate-950 font-semibold px-4 py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 relative group overflow-hidden btn-submit">
+                <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
+                <span class="font-mono text-sm tracking-wider uppercase font-extrabold text-slate-900">Authorize Core</span>
+                <svg class="h-4 w-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+            </button>
+        </form>
+
+        <!-- Footer indicator -->
+        <div class="mt-9 text-[10px] font-mono text-slate-600 border-t border-slate-800/40 pt-4 flex items-center justify-center space-x-2 font-medium">
+            <span class="h-1.5 w-1.5 bg-[var(--accent-primary)] rounded-full animate-ping" style="background-color: var(--accent-primary)"></span>
+            <span>SYSTEM SECURITY LEVEL: A_MAX_CIPHER</span>
+        </div>
+
+    </div>
+
+    <!-- Keyframe animation styles -->
+    <style>
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</body>
+</html>

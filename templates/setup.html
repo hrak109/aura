@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" class="min-h-screen bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura by Haistellar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-image: 
+                radial-gradient(at 50% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(15, 23, 42, 0.5) 0px, transparent 50%),
+                linear-gradient(rgba(18, 24, 38, 0.95), rgba(2, 6, 23, 1));
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .cyber-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(148, 163, 184, 0.007) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(148, 163, 184, 0.007) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: center center;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Focus custom ring styling */
+        input:focus {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 1px #10b981 !important;
+        }
+
+        /* Submit Button dynamic glow hover transitions */
+        .btn-submit {
+            background-color: #10b981 !important;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25) !important;
+        }
+        .btn-submit:hover {
+            filter: brightness(1.1) !important;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.4) !important;
+        }
+        .btn-submit:active {
+            filter: brightness(0.9) !important;
+        }
+
+        /* Premium glass card custom glow hover */
+        .setup-card:hover {
+            border-color: rgba(16, 185, 129, 0.2) !important;
+            box-shadow: 0 0 45px rgba(2, 6, 23, 0.9), 0 0 30px rgba(16, 185, 129, 0.1) !important;
+        }
+
+        /* Scrollbar styles inside setup guide list */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 flex items-center justify-center relative py-10 px-4 sm:px-6">
+    
+    <!-- cybergrid overlay -->
+    <div class="cyber-grid"></div>
+
+    <!-- main glassmorphism layout card -->
+    <div class="w-full max-w-4xl bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-9 shadow-2xl relative z-10 transition-all duration-500 group setup-card flex flex-col space-y-6">
+        
+        <!-- Glowing scan line overlay -->
+        <div class="absolute -top-px left-16 right-16 h-[2px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent animate-pulse" style="background-image: linear-gradient(to right, transparent, #10b981, transparent)"></div>
+
+        <!-- Portal Header -->
+        <div class="flex flex-col items-center text-center pb-4 border-b border-slate-800/60">
+            <!-- Pulsing console icon -->
+            <div class="h-14 w-14 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-center mb-3 transition-all duration-500 shadow-inner relative" style="border-color: rgba(16, 185, 129, 0.2)">
+                <svg class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                <div class="absolute inset-0 rounded-2xl bg-emerald-500/10 animate-ping opacity-25"></div>
+            </div>
+            
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-[0.2em] text-slate-100 transition-colors duration-300 uppercase">AURA SECURITY INITIALIZATION</h1>
+            <span class="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20 tracking-widest mt-2 uppercase font-semibold">System Setup Wizard</span>
+        </div>
+
+        <!-- Dynamic Error Panel -->
+        {% if error %}
+        <div class="bg-red-950/40 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl flex items-center space-x-3 text-xs font-mono animate-bounce flex-shrink-0">
+            <svg class="h-4.5 w-4.5 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Grid Splitted Form and Guidance -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Side: Wizard Input Form -->
+            <form action="/setup" method="POST" class="lg:col-span-7 space-y-4">
+                <div class="space-y-4">
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-[10px] font-mono tracking-widest text-slate-400 uppercase mb-1.5 font-bold">Wyze Account Email</label>
+                        <input type="email" name="email" id="email" required placeholder="user@example.com"
+                               class="block w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none font-mono text-sm transition-all duration-300">
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-[10px] font-mono tracking-widest text-slate-400 uppercase mb-1.5 font-bold">Wyze Account Password</label>
+                        <input type="password" name="password" id="password" required placeholder="••••••••"
+                               class="block w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none font-mono text-sm transition-all duration-300">
+                    </div>
+
+                    <!-- Developer API Client ID -->
+                    <div>
+                        <label for="client_id" class="block text-[10px] font-mono tracking-widest text-slate-400 uppercase mb-1.5 font-bold">Wyze API Client ID (Key ID)</label>
+                        <input type="text" name="client_id" id="client_id" required placeholder="Key ID"
+                               class="block w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none font-mono text-sm transition-all duration-300">
+                    </div>
+
+                    <!-- Developer API Secret Key -->
+                    <div>
+                        <label for="api_key" class="block text-[10px] font-mono tracking-widest text-slate-400 uppercase mb-1.5 font-bold">Wyze API Developer Key (Secret)</label>
+                        <input type="text" name="api_key" id="api_key" required placeholder="Secret Key"
+                               class="block w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none font-mono text-sm transition-all duration-300">
+                    </div>
+
+                    <!-- Access Code Settings -->
+                    <div>
+                        <label for="web_password" class="block text-[10px] font-mono tracking-widest text-slate-400 uppercase mb-1.5 font-bold">Aura Local Dashboard Password</label>
+                        <input type="text" name="web_password" id="web_password" required placeholder="Dashboard Password"
+                               class="block w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none font-mono text-sm font-bold text-emerald-400 transition-all duration-300">
+                        <span class="block text-[9px] font-mono text-slate-500 mt-1">* Access code you will use to log in to Aura on secondary devices/PCs on your LAN.</span>
+                    </div>
+                </div>
+
+                <button type="submit" 
+                        class="w-auto px-8 py-2.5 mx-auto text-slate-950 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 relative group overflow-hidden btn-submit mt-6">
+                    <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
+                    <span class="font-mono text-sm tracking-wider uppercase font-extrabold text-slate-900">Launch Aura!</span>
+                    <svg class="h-4.5 w-4.5 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Right Side: API Key Retrieval Steps Guide -->
+            <div class="lg:col-span-5 bg-slate-950/80 rounded-2xl border border-slate-800/80 p-5 space-y-4">
+                <span class="block text-xs font-mono text-emerald-400 uppercase tracking-widest font-extrabold pb-2.5 border-b border-slate-900 flex items-center space-x-2 select-none">
+                    <svg class="h-4 w-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    <span>Developer Integration Guide</span>
+                </span>
+                
+                <div class="text-xs space-y-3.5 text-slate-300 font-medium overflow-y-auto max-h-[360px] pr-1.5">
+                    <div class="space-y-1">
+                        <div class="text-[10px] font-mono text-slate-500 uppercase font-bold tracking-wider">Step 1: Open Developer Console</div>
+                        <p class="leading-relaxed">Access the official Wyze Developer Portal:
+                            <a href="https://developer-api-console.wyze.com/" target="_blank" class="text-emerald-400 hover:text-emerald-300 underline font-semibold font-mono break-all inline-block mt-0.5">https://developer-api-console.wyze.com/</a>
+                        </p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="text-[10px] font-mono text-slate-500 uppercase font-bold tracking-wider">Step 2: Sign In</div>
+                        <p class="leading-relaxed">Log in using your standard Wyze mobile app email address and account password.</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="text-[10px] font-mono text-slate-500 uppercase font-bold tracking-wider">Step 3: Generate API Credentials</div>
+                        <p class="leading-relaxed">Navigate to the **API Credentials** section in the dashboard and click the **"Create key"** button.</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="text-[10px] font-mono text-slate-500 uppercase font-bold tracking-wider">Step 4: Retrieve ID & Secret</div>
+                        <p class="leading-relaxed">Copy the newly generated fields and paste them here:
+                            <br>• The **Key ID** corresponds to your **API Client ID**.
+                            <br>• The **Key Secret** corresponds to your **API Developer Key**.
+                        </p>
+                    </div>
+
+                    <div class="space-y-1 border-t border-slate-900 pt-3">
+                        <div class="text-[10px] font-mono text-amber-500 uppercase font-bold tracking-wider">💡 Troubleshooting P2P IP Streams</div>
+                        <p class="leading-relaxed text-[11px] text-slate-400">AURA connects directly to Wyze cameras inside your home network using native WebRTC peer-to-peer pipelines for ultra-low latency. Make sure your cameras are online and turned on in your Wyze application.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+    <!-- Keyframe shimmer style -->
+    <style>
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</body>
+</html>

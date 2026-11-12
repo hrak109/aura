@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura by Haistellar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS variables for personalization system theme */
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-image: 
+                radial-gradient(at 50% 0%, var(--accent-glow) 0px, transparent 50%),
+                linear-gradient(rgba(18, 24, 38, 0.95), rgba(2, 6, 23, 1));
+            background-size: cover;
+            background-attachment: fixed;
+            --header-height: 46px;
+        }
+
+        /* Accent Themes definition */
+        body.theme-emerald {
+            --accent-primary: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.35);
+            --accent-bg: rgba(16, 185, 129, 0.12);
+            --accent-border: rgba(16, 185, 129, 0.25);
+            --accent-text: #34d399;
+        }
+        body.theme-cyan {
+            --accent-primary: #06b6d4;
+            --accent-glow: rgba(6, 182, 212, 0.35);
+            --accent-bg: rgba(6, 182, 212, 0.12);
+            --accent-border: rgba(6, 182, 212, 0.25);
+            --accent-text: #22d3ee;
+        }
+        body.theme-violet {
+            --accent-primary: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.35);
+            --accent-bg: rgba(139, 92, 246, 0.12);
+            --accent-border: rgba(139, 92, 246, 0.25);
+            --accent-text: #a78bfa;
+        }
+        body.theme-amber {
+            --accent-primary: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.35);
+            --accent-bg: rgba(245, 158, 11, 0.12);
+            --accent-border: rgba(245, 158, 11, 0.25);
+            --accent-text: #fbbf24;
+        }
+
+        .cyber-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(148, 163, 184, 0.007) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(148, 163, 184, 0.007) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center center;
+            pointer-events: none;
+            z-index: 1;
+        }
+        /* Custom drag & drop visual feedback */
+        .camera-card.dragging {
+            opacity: 0.15;
+            transform: scale(0.97);
+            border: 2px dashed var(--accent-primary) !important;
+            transition: all 0.2s ease;
+        }
+        .camera-card.drag-over {
+            border: 2px solid var(--accent-primary) !important;
+            box-shadow: 0 0 25px var(--accent-glow) !important;
+        }
+
+        /* Scrollable grid layout settings */
+        #camera-grid {
+            grid-auto-rows: max-content !important;
+        }
+        .camera-card {
+            aspect-ratio: 16 / 9;
+            height: auto !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        /* Fail-safe grid column span definitions */
+        .camera-card.col-span-1 { grid-column: span 1 / span 1; }
+        .camera-card.col-span-2 { grid-column: span 2 / span 2; }
+        .camera-card.col-span-3 { grid-column: span 3 / span 3; }
+        .camera-card.col-span-4 { grid-column: span 4 / span 4; }
+        .camera-card.col-span-5 { grid-column: span 5 / span 5; }
+
+        /* Dynamic Grid Layouts fail-safe */
+        #camera-grid.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        #camera-grid.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #camera-grid.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        #camera-grid.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        #camera-grid.grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+        /* Diagonal corner notch grab handle for direct drag-to-resize */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 24px;
+            height: 24px;
+            cursor: se-resize;
+            z-index: 40;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 4px;
+            pointer-events: auto;
+            border-bottom-right-radius: 0.75rem;
+        }
+        .resize-handle svg {
+            opacity: 0.25;
+            transition: opacity 0.2s, color 0.2s, transform 0.2s;
+            color: #64748b; /* slate-500 */
+        }
+        .camera-card:hover .resize-handle svg {
+            opacity: 0.6;
+            color: var(--accent-primary);
+        }
+        .resize-handle:hover svg {
+            opacity: 1 !important;
+            color: var(--accent-primary) !important;
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 5px var(--accent-glow));
+        }
+
+        /* Dynamic Sizing Aspect Ratio Schemes */
+        .aspect-scheme-fill video {
+            object-fit: fill !important;
+        }
+        .aspect-scheme-cover video {
+            object-fit: cover !important;
+        }
+        .aspect-scheme-contain video {
+            object-fit: contain !important;
+        }
+
+        /* Active theme highlight styles in modal */
+        .active-theme-btn {
+            color: var(--accent-text) !important;
+            background-color: var(--accent-bg) !important;
+            border-color: var(--accent-primary) !important;
+            font-weight: 700 !important;
+        }
+
+        /* Custom Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
+    </style>
+</head>
+<body class="h-full text-slate-100 flex flex-col relative overflow-hidden theme-emerald">
+    <script>
+        // Immediate theme parsing to avoid visual flash on load
+        (function() {
+            const savedTheme = localStorage.getItem('wyze_system_theme') || 'emerald';
+            document.body.className = document.body.className.replace('theme-emerald', 'theme-' + savedTheme);
+        })();
+    </script>
+    
+    <!-- cybergrid overlay -->
+    <div class="cyber-grid"></div>
+
+    <!-- Fullscreen Shutdown Overlay -->
+    <div id="shutdown-overlay" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md hidden opacity-0 transition-all duration-500 select-none px-6 text-center">
+        <!-- Glowing central icon -->
+        <div class="h-20 w-20 bg-slate-900 border border-red-950 rounded-3xl flex items-center justify-center mb-6 shadow-2xl relative">
+            <svg class="h-10 w-10 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M5.636 5.636a9 9 0 000 12.728m0 0l2.829-2.829m-2.829 2.829L3 21M12 12h.01M12 12V9m0 3v3" />
+            </svg>
+            <div class="absolute inset-0 rounded-3xl bg-red-500/10 animate-ping opacity-20"></div>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-extrabold tracking-[0.2em] text-red-400 mb-2 uppercase select-none">AURA CORE TERMINATED</h2>
+        <p class="text-xs sm:text-sm font-medium text-slate-400 max-w-md leading-relaxed font-mono select-none">The background server and streaming workers have been safely shut down. You can now close this browser tab.</p>
+        <div class="mt-8 p-5 rounded-xl bg-slate-900/60 border border-slate-800/80 max-w-md select-text shadow-inner">
+            <span class="block text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold mb-1.5">How to Start Aura Again:</span>
+            <span class="block text-xs font-semibold leading-relaxed text-slate-300">Double-click the <span class="font-mono text-emerald-400 font-bold select-all bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">Aura.exe</span> application inside your Windows installation folder to boot the security matrix back up!</span>
+        </div>
+    </div>
+
+    <!-- Glassmorphic Settings Configuration Modal (Upscaled Font & Modern Spacing) -->
+    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 hidden opacity-0 transition-all duration-300">
+        <div class="bg-slate-900/90 border border-slate-800/80 rounded-3xl w-full max-w-md max-h-[85vh] sm:max-h-[90vh] p-6 sm:p-8 shadow-2xl relative translate-y-4 transition-all duration-300 flex flex-col overflow-hidden">
+            <!-- Glowing header border -->
+            <div class="absolute -top-px left-12 right-12 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent flex-shrink-0"></div>
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800/80 flex-shrink-0">
+                <div class="flex items-center space-x-3 text-slate-200">
+                    <svg class="h-5.5 w-5.5 text-[var(--accent-text)]" style="color: var(--accent-text)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="font-mono text-sm tracking-[0.15em] uppercase font-extrabold text-slate-100">Aura System Panel</span>
+                </div>
+                <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-200 transition-colors duration-200 p-1.5 rounded-lg hover:bg-slate-800/40">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Content options -->
+            <div class="space-y-6 overflow-y-auto pr-1 flex-1">
+                <!-- Grid sizes -->
+                <div class="space-y-2.5">
+                    <span class="block text-xs font-mono text-slate-400 uppercase tracking-widest font-semibold">Grid Columns</span>
+                    <div class="grid grid-cols-5 gap-1.5 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800/80 text-xs font-mono text-slate-400 shadow-inner">
+                        <button onclick="setGridLayout('1')" id="btn-grid-1" class="py-2 rounded-lg text-center transition-all duration-300 font-semibold">1 Col</button>
+                        <button onclick="setGridLayout('2')" id="btn-grid-2" class="py-2 rounded-lg text-center transition-all duration-300 font-semibold">2 Col</button>
+                        <button onclick="setGridLayout('3')" id="btn-grid-3" class="py-2 rounded-lg text-center transition-all duration-300 font-semibold">3 Col</button>
+                        <button onclick="setGridLayout('4')" id="btn-grid-4" class="py-2 rounded-lg text-center transition-all duration-300 font-semibold">4 Col</button>
+                        <button onclick="setGridLayout('5')" id="btn-grid-5" class="py-2 rounded-lg text-center transition-all duration-300 font-semibold">5 Col</button>
+                    </div>
+                </div>
+
+                <!-- Aspect sizing schemes -->
+                <div class="space-y-2.5">
+                    <span class="block text-xs font-mono text-slate-400 uppercase tracking-widest font-semibold">Video Size Scheme</span>
+                    <div class="grid grid-cols-3 gap-1.5 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800/80 text-xs font-mono text-slate-400 shadow-inner">
+                        <button onclick="setAspectScheme('fill')" id="btn-aspect-fill" class="py-2 rounded-lg text-center transition-all duration-300 font-semibold">STRETCH</button>
+                        <button onclick="setAspectScheme('cover')" id="btn-aspect-cover" class="py-2 rounded-lg text-center transition-all duration-300 font-semibold">CROP</button>
+                        <button onclick="setAspectScheme('contain')" id="btn-aspect-contain" class="py-2 rounded-lg text-center transition-all duration-300 font-semibold">FIT</button>
+                    </div>
+                    <span class="block text-[10px] font-mono text-slate-500 mt-1.5 leading-relaxed">
+                        • Stretch: Fills tile fully (forces 100% visibility of timestamps).<br>
+                        • Crop: Fills grid tile while preserving camera aspect ratio (crops bottom).<br>
+                        • Fit: Retains full raw feed size with neat black side letterboxes.
+                    </span>
+                </div>
+
+                <!-- Personalization Theme Switcher -->
+                <div class="space-y-2.5 pt-4.5 border-t border-slate-800/60">
+                    <span class="block text-xs font-mono text-slate-400 uppercase tracking-widest font-semibold">System Accent Color</span>
+                    <div class="grid grid-cols-4 gap-1.5 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800/80 text-[10px] font-mono shadow-inner">
+                        <button onclick="setSystemTheme('emerald')" id="btn-theme-emerald" class="py-2 rounded-lg text-center transition-all duration-300 font-bold">EMERALD</button>
+                        <button onclick="setSystemTheme('cyan')" id="btn-theme-cyan" class="py-2 rounded-lg text-center transition-all duration-300 font-bold">CYAN</button>
+                        <button onclick="setSystemTheme('violet')" id="btn-theme-violet" class="py-2 rounded-lg text-center transition-all duration-300 font-bold">VIOLET</button>
+                        <button onclick="setSystemTheme('amber')" id="btn-theme-amber" class="py-2 rounded-lg text-center transition-all duration-300 font-bold">AMBER</button>
+                    </div>
+                </div>
+
+                <!-- Local Network Connectivity Guidance -->
+                <div class="space-y-2.5 pt-4.5 border-t border-slate-800/60">
+                    <span class="block text-xs font-mono text-slate-400 uppercase tracking-widest font-semibold">🌐 Link Client Devices</span>
+                    <div class="bg-slate-950/90 p-4 rounded-xl border border-slate-800/80 text-xs font-mono text-slate-300 space-y-3 select-text shadow-inner">
+                        <div class="text-slate-500 text-[9px] tracking-wider uppercase font-semibold">Access Core Dashboard via LAN/WiFi:</div>
+                        {% for ip in lan_ips %}
+                        <div class="space-y-1">
+                            <div class="text-[9px] text-slate-500 font-bold uppercase">Subnet {{ loop.index }}:</div>
+                            <div class="text-[var(--accent-text)] font-extrabold text-center py-2 bg-slate-900/80 rounded-lg border border-slate-800/60 select-all font-mono tracking-widest text-sm shadow-md" style="color: var(--accent-text); border-color: var(--accent-border)">http://{{ ip }}:8000</div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-[10px] text-slate-500 leading-relaxed font-semibold">* Use the URL that matches the WiFi or network subnet your other devices are connected to.</div>
+                    </div>
+                </div>
+
+                {% if is_host %}
+                <!-- System Operations Controls -->
+                <div class="space-y-2.5 pt-4.5 border-t border-slate-800/60 flex-shrink-0">
+                    <span class="block text-xs font-mono text-slate-400 uppercase tracking-widest font-semibold">⚡ System Operations</span>
+                    <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                        <button onclick="rebootStreamingEngine()" id="btn-reboot-streams" class="py-2.5 rounded-xl text-center bg-slate-950 border border-slate-800 hover:border-[var(--accent-primary)]/40 hover:bg-slate-900 text-slate-300 hover:text-[var(--accent-text)] transition-all duration-300 font-semibold flex items-center justify-center space-x-1.5 shadow-md">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" />
+                            </svg>
+                            <span>REBOOT ENGINE</span>
+                        </button>
+                        <button onclick="shutdownAuraCore()" id="btn-shutdown-server" class="py-2.5 rounded-xl text-center bg-red-950/20 border border-red-950/40 hover:border-red-500/40 hover:bg-red-950/40 text-red-400 hover:text-red-300 transition-all duration-300 font-bold flex items-center justify-center space-x-1.5 shadow-md shadow-red-950/10">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                            <span>SHUTDOWN CORE</span>
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Slim Borderless Header (Slim & Clean) -->
+    <header class="bg-slate-950/90 backdrop-blur-md border-b border-slate-900 px-8 h-[46px] flex items-center justify-between shadow-sm relative z-30">
+        <div class="flex items-center space-x-3">
+            <div class="h-3 w-3 rounded-full animate-pulse shadow-[0_0_10px_var(--accent-primary)] theme-dot" style="background-color: var(--accent-primary); box-shadow: 0 0 10px var(--accent-primary)"></div>
+            <h1 class="text-base font-extrabold tracking-[0.2em] uppercase text-slate-100 select-none">Aura</h1>
+            <span class="text-[9px] font-mono bg-slate-900 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-800 tracking-[0.15em] font-semibold select-none">BY HAISTELLAR</span>
+        </div>
+        
+        <div class="flex items-center space-x-2.5">
+            <!-- Settings Modal Trigger Button -->
+            <button 
+                onclick="toggleSettingsModal()"
+                title="System Settings"
+                class="h-9 w-9 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-[var(--accent-primary)]/40 hover:bg-slate-800/80 text-slate-400 hover:text-[var(--accent-text)] transition-all duration-300 shadow-lg flex items-center justify-center flex-shrink-0">
+                <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+
+            <!-- Logout Trigger -->
+            <a href="/logout" 
+               title="Logout Session"
+               class="h-9 w-9 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-red-500/40 hover:bg-red-950/20 text-slate-400 hover:text-red-400 transition-all duration-300 shadow-lg flex items-center justify-center flex-shrink-0">
+                <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Viewport Grid (Flush Edge-to-Edge, Gapless) -->
+    <main id="camera-grid" class="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0 overflow-y-auto relative z-10 bg-slate-950 aspect-scheme-contain">
+        {% if cameras %}
+            {% for cam in cameras %}
+            <div 
+                draggable="true"
+                ondragstart="handleDragStart(event)"
+                ondragover="handleDragOver(event)"
+                ondragenter="handleDragEnter(event)"
+                ondragleave="handleDragLeave(event)"
+                ondragend="handleDragEnd(event)"
+                ondrop="handleDrop(event)"
+                data-id="{{ cam.safe_name }}"
+                class="bg-slate-950 relative group aspect-video w-full overflow-hidden camera-card transition-all duration-300 select-none border-0 m-0 p-0 hover:z-20">
+                
+                <!-- Connection Scanline Gradient -->
+                <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/0 to-transparent group-hover:via-emerald-500/40 transition-all duration-500 z-30 pointer-events-none"></div>
+
+                <!-- Video Stream Frame (Native WebRTC Player with 100% flush crop) -->
+                <video 
+                    id="video-{{ cam.safe_name }}"
+                    autoplay 
+                    playsinline 
+                    muted
+                    class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none bg-slate-950">
+                </video>
+                
+                <!-- Stream Status Overlay (connecting / error states) -->
+                <div id="status-{{ cam.safe_name }}" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-20 transition-opacity duration-500">
+                    <!-- Connecting state (default) -->
+                    <div id="status-connecting-{{ cam.safe_name }}" class="flex flex-col items-center space-y-2">
+                        <div class="h-5 w-5 rounded-full border-2 border-t-transparent border-slate-600 animate-spin"></div>
+                        <span class="text-[10px] font-mono text-slate-700 tracking-widest">CONNECTING_P2P...</span>
+                    </div>
+                    <!-- Error state (hidden by default) -->
+                    <div id="status-error-{{ cam.safe_name }}" class="hidden flex-col items-center space-y-3 px-4 text-center">
+                        <div class="h-10 w-10 rounded-xl bg-red-950/40 border border-red-900/50 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                            </svg>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[10px] font-mono font-bold text-red-400 tracking-wider">STREAM OFFLINE</p>
+                            <p id="status-error-msg-{{ cam.safe_name }}" class="text-[9px] font-mono text-slate-600 max-w-[160px] leading-relaxed">Cannot reach camera signal</p>
+                        </div>
+                        <button
+                            onclick="reloadStream('{{ cam.safe_name }}')"
+                            class="mt-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-[var(--accent-primary)]/50 text-[9px] font-mono text-slate-400 hover:text-[var(--accent-text)] transition-all duration-200 font-bold tracking-wider"
+                        >↺ RETRY</button>
+                    </div>
+                </div>
+
+                <!-- Bottom HUD Bar (Visible on Hover) -->
+                <div class="absolute bottom-0 left-0 right-0 z-30 opacity-0 group-hover:opacity-100 transition-all duration-300 px-1.5 py-1 sm:px-2.5 sm:py-1.5 bg-slate-950/50 backdrop-blur-sm border-t border-[var(--accent-border)] flex flex-col space-y-1 cursor-grab active:cursor-grabbing shadow-[0_-10px_20px_rgba(0,0,0,0.3)]">
+                    
+                    <!-- Top row of bottom HUD: Title + Status + Span Button -->
+                    <div class="flex items-center justify-between relative">
+                        <div class="flex items-center space-x-2 pointer-events-none">
+                            <div>
+                                <h3 class="font-extrabold text-[9px] xs:text-[10px] sm:text-[11px] tracking-wider text-slate-100 uppercase drop-shadow-md leading-tight">{{ cam.name }}</h3>
+                                <p class="text-[7px] sm:text-[8px] font-mono text-slate-300 tracking-wider uppercase drop-shadow-md leading-none mt-0.5">{{ cam.model }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Absolute Center Drag Cue -->
+                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center text-center opacity-50 group-hover:opacity-75 transition-opacity duration-300 pointer-events-none">
+                            <svg class="h-3 w-3 xs:h-3.5 xs:w-3.5 text-slate-100 mr-0.5 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                            </svg>
+                            <span class="text-[6.5px] sm:text-[7px] font-mono text-slate-100 tracking-widest uppercase font-semibold drop-shadow-md">DRAG TO REORDER</span>
+                        </div>
+                        
+                        <div class="flex items-center space-x-1.5">
+                            <!-- Connection Status -->
+                            <div class="flex items-center space-x-1 bg-[var(--accent-bg)] px-1.5 py-0.5 rounded-full border border-[var(--accent-border)] text-[7px] sm:text-[8px] font-mono text-[var(--accent-text)] font-extrabold tracking-wider" style="color: var(--accent-text); border-color: var(--accent-border); background-color: var(--accent-bg)">
+                                <span class="h-1 w-1 rounded-full bg-[var(--accent-primary)] animate-pulse shadow-[0_0_6px_var(--accent-glow)]" style="background-color: var(--accent-primary); box-shadow: 0 0 6px var(--accent-primary)"></span>
+                                <span>LIVE</span>
+                            </div>
+                            
+                            <!-- Span Button -->
+                            <button 
+                                onclick="cycleSpan('{{ cam.safe_name }}')"
+                                title="Resize Column Span"
+                                class="flex items-center space-x-1 bg-slate-900/80 hover:bg-slate-800/80 rounded-md border border-slate-700 hover:border-[var(--accent-primary)]/40 px-1.5 py-0.5 transition-all duration-300 shadow-sm">
+                                <span class="text-[6.5px] xs:text-[7px] font-mono text-slate-400 uppercase font-semibold select-none hidden xs:inline-block">SPAN:</span>
+                                <span id="span-val-{{ cam.safe_name }}" class="text-[7px] xs:text-[7.5px] font-mono text-[var(--accent-text)] font-extrabold select-none">1 COL</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bottom row of bottom HUD: Specs & Controls -->
+                    <div class="flex items-end justify-between pt-0.5 border-t border-slate-700/50">
+                        <!-- Camera Specs -->
+                        <div class="text-[7px] sm:text-[8px] font-mono text-slate-400 space-y-0.5 pointer-events-none font-medium drop-shadow-md">
+                            <div>IP: <span class="text-slate-300">{{ cam.ip }}</span></div>
+                            <div class="hidden sm:block">MAC: <span class="text-slate-300">{{ cam.mac }}</span></div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex items-center space-x-1">
+                            <!-- Resolution Selector -->
+                            <div class="inline-flex rounded bg-slate-900/80 p-0.5 border border-slate-700 text-[7px] xs:text-[8px] font-mono shadow-inner cursor-default">
+                                <button 
+                                    onclick="setQuality('{{ cam.safe_name }}', 'sd')" 
+                                    id="btn-sd-{{ cam.safe_name }}"
+                                    class="px-1.5 py-0.5 rounded-sm text-[var(--accent-text)] bg-[var(--accent-bg)] border border-[var(--accent-border)] font-bold transition-all duration-300" style="color: var(--accent-text); border-color: var(--accent-border); background-color: var(--accent-bg)">
+                                    SMOOTH
+                                </button>
+                                    <button 
+                                        onclick="setQuality('{{ cam.safe_name }}', 'hd')" 
+                                        id="btn-hd-{{ cam.safe_name }}"
+                                        class="px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-300 font-semibold transition-all duration-300 border border-transparent">
+                                        HD
+                                    </button>
+                                </div>
+                                
+                                <!-- Reload Signal Button -->
+                                <button 
+                                    onclick="reloadStream('{{ cam.safe_name }}')"
+                                    title="Reload Stream Signal"
+                                    class="p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-[var(--accent-primary)]/40 hover:bg-slate-800/80 text-slate-400 hover:text-[var(--accent-text)] transition-all duration-300 shadow-md">
+                                    <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" />
+                                    </svg>
+                                </button>
+
+                                <!-- Fullscreen Expand Button -->
+                                <button 
+                                    onclick="toggleFullscreen('{{ cam.safe_name }}')"
+                                    title="Fullscreen Stream"
+                                    class="p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-[var(--accent-primary)]/40 hover:bg-slate-800/80 text-slate-400 hover:text-[var(--accent-text)] transition-all duration-300 shadow-md">
+                                    <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diagonal corner notch grab handle for direct drag-to-resize -->
+                <div 
+                    onmousedown="startResizeDrag(event, '{{ cam.safe_name }}')"
+                    class="resize-handle group/handle">
+                    <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 10 10">
+                        <path d="M10 0 L10 10 L0 10 Z" />
+                    </svg>
+                </div>
+
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Empty state panel -->
+            <div class="col-span-full flex flex-col items-center justify-center py-20 text-center space-y-4">
+                <div class="h-16 w-16 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-slate-500">
+                    <svg class="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="font-bold text-slate-300">No Streaming Active</h3>
+                    <p class="text-xs text-slate-500 max-w-md">Verify your Wyze login credentials, developer API keys, and camera status inside your `.env` configuration file.</p>
+                </div>
+            </div>
+        {% endif %}
+    </main>
+
+    <!-- Drag & Drop & Stream Management Scripts -->
+    <script>
+        // --- System Events Listener ---
+        const evtSource = new EventSource("/api/system/events");
+        evtSource.onmessage = function(event) {
+            if (event.data === "restart") {
+                console.log("[AURA] Received restart event from server, refreshing page...");
+                // Add a small random jitter to avoid all browsers reloading at the exact same millisecond
+                setTimeout(() => {
+                    window.location.reload();
+                }, Math.random() * 2000 + 1000);
+            }
+        };
+
+        // --- Drag and Drop State & Handlers ---
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.currentTarget;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedElement.getAttribute('data-id'));
+            
+            // Wait a frame so the opacity applies to the source and not the dragged ghost image
+            setTimeout(() => {
+                draggedElement.classList.add('dragging');
+            }, 0);
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            const target = e.currentTarget;
+            if (target !== draggedElement) {
+                target.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            const cols = document.querySelectorAll('.camera-card');
+            cols.forEach(col => col.classList.remove('drag-over'));
+        }
+
+        function handleDrop(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            const target = e.currentTarget;
+            if (draggedElement && draggedElement !== target) {
+                const parent = target.parentNode;
+                const allCards = Array.from(parent.children);
+                const draggedIndex = allCards.indexOf(draggedElement);
+                const targetIndex = allCards.indexOf(target);
+                
+                if (draggedIndex < targetIndex) {
+                    parent.insertBefore(draggedElement, target.nextSibling);
+                } else {
+                    parent.insertBefore(draggedElement, target);
+                }
+                
+                saveCameraOrder();
+            }
+            return false;
+        }
+
+        // --- Persistent LocalStorage Order saving & restoration ---
+        function saveCameraOrder() {
+            const parent = document.getElementById('camera-grid');
+            if (!parent) return;
+            const cards = Array.from(parent.children);
+            const order = cards.map(card => card.getAttribute('data-id')).filter(Boolean);
+            localStorage.setItem('wyze_camera_order', JSON.stringify(order));
+        }
+
+        function restoreCameraOrder() {
+            const parent = document.getElementById('camera-grid');
+            if (!parent) return;
+            const saved = localStorage.getItem('wyze_camera_order');
+            if (saved) {
+                try {
+                    const order = JSON.parse(saved);
+                    const cardsMap = {};
+                    const cards = Array.from(parent.children);
+                    cards.forEach(card => {
+                        const id = card.getAttribute('data-id');
+                        if (id) cardsMap[id] = card;
+                    });
+                    
+                    // Reorder DOM nodes according to saved localStorage configuration
+                    order.forEach(id => {
+                        if (cardsMap[id]) {
+                            parent.appendChild(cardsMap[id]);
+                        }
+                    });
+                    
+                    // Handle any newly added cameras that aren't represented in localStorage yet
+                    cards.forEach(card => {
+                        const id = card.getAttribute('data-id');
+                        if (id && !order.includes(id)) {
+                            parent.appendChild(card);
+                        }
+                    });
+                } catch (e) {
+                    console.error("Failed to restore camera grid positions:", e);
+                }
+            }
+        }
+
+        // --- Native WebRTC Stream Connection Management ---
+        const pcs = {};
+        const retryTimers = {};
+        const retryCount = {};
+        const MAX_RETRIES = 50;
+        const STREAM_TIMEOUT_MS = 35000; // 35s to allow go2rtc fallback cycles
+
+        function setStreamStatus(safeName, state, message) {
+            const connectingEl = document.getElementById(`status-connecting-${safeName}`);
+            const errorEl = document.getElementById(`status-error-${safeName}`);
+            const errorMsg = document.getElementById(`status-error-msg-${safeName}`);
+            const statusWrap = document.getElementById(`status-${safeName}`);
+            const video = document.getElementById(`video-${safeName}`);
+
+            if (state === 'connecting') {
+                if (connectingEl) { 
+                    connectingEl.classList.remove('hidden'); 
+                    connectingEl.style.display = ''; 
+                    const label = connectingEl.querySelector('span');
+                    if (label) label.textContent = message || 'CONNECTING_P2P...';
+                }
+                if (errorEl) { errorEl.classList.add('hidden'); errorEl.style.display = 'none'; }
+                if (statusWrap) {
+                    statusWrap.style.display = '';
+                    statusWrap.style.opacity = '1';
+                }
+            } else if (state === 'live') {
+                // Fade out status overlay — video is playing
+                if (statusWrap) {
+                    statusWrap.style.opacity = '0';
+                    setTimeout(() => { statusWrap.style.display = 'none'; }, 500);
+                }
+            } else if (state === 'error') {
+                if (connectingEl) { connectingEl.classList.add('hidden'); connectingEl.style.display = 'none'; }
+                if (errorEl) {
+                    errorEl.classList.remove('hidden');
+                    errorEl.style.display = 'flex';
+                }
+                if (errorMsg && message) errorMsg.textContent = message;
+                if (statusWrap) {
+                    statusWrap.style.display = '';
+                    statusWrap.style.opacity = '1';
+                }
+                // Clear stale video
+                if (video && video.srcObject) {
+                    video.srcObject = null;
+                }
+            }
+        }
+
+        async function connectStream(safeName, quality) {
+            const video = document.getElementById(`video-${safeName}`);
+            if (!video) return;
+
+            // Cancel any pending auto-retry for this camera
+            if (retryTimers[safeName]) {
+                clearTimeout(retryTimers[safeName]);
+                delete retryTimers[safeName];
+            }
+
+            // Reset retry counter on manual reload
+            if (!retryCount[safeName]) retryCount[safeName] = 0;
+
+            // Show connecting state
+            setStreamStatus(safeName, 'connecting');
+
+            // 1. Close existing peer connection if actively running
+            if (pcs[safeName]) {
+                try { pcs[safeName].close(); } catch (e) {}
+                delete pcs[safeName];
+            }
+
+            // 2. Create standard browser RTCPeerConnection
+            const pc = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            });
+            pcs[safeName] = pc;
+
+            console.log(`[WebRTC - ${safeName}] Creating new RTCPeerConnection.`);
+
+            // Track whether video has arrived yet (for timeout detection)
+            let streamReceived = false;
+
+            // 3. Assign stream tracks to HTML5 video element on successful handshake
+            pc.ontrack = (event) => {
+                console.log(`[WebRTC - ${safeName}] Received track: ${event.track.kind}`);
+                if (video.srcObject !== event.streams[0]) {
+                    video.srcObject = event.streams[0];
+                    video.play().catch(e => console.error(`[WebRTC - ${safeName}] Play error:`, e));
+                }
+            };
+
+            // 4. Detect first real video frame to confirm stream is live
+            video.onplaying = () => {
+                console.log(`[WebRTC - ${safeName}] Video is actively playing frames!`);
+                streamReceived = true;
+                retryCount[safeName] = 0; // Reset counter on success
+                setStreamStatus(safeName, 'live');
+            };
+
+            // Event Listeners for Debugging
+            pc.onicegatheringstatechange = () => {
+                console.log(`[WebRTC - ${safeName}] ICE Gathering State changed to: ${pc.iceGatheringState}`);
+            };
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    console.log(`[WebRTC - ${safeName}] Gathered ICE candidate:`, event.candidate.candidate);
+                }
+            };
+
+            pc.onsignalingstatechange = () => {
+                console.log(`[WebRTC - ${safeName}] Signaling State changed to: ${pc.signalingState}`);
+            };
+
+            // 5. Detect ICE failure
+            pc.oniceconnectionstatechange = () => {
+                console.log(`[WebRTC - ${safeName}] ICE Connection State changed to: ${pc.iceConnectionState}`);
+                if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+                    if (!streamReceived && pcs[safeName] === pc) {
+                        console.warn(`[WebRTC - ${safeName}] ICE connection failed or disconnected before stream start.`);
+                        handleStreamFailure(safeName, quality, 'ICE connection failed — camera unreachable on network');
+                    }
+                }
+            };
+
+            // 6. Negotiate SDP Handshake with go2rtc bare-metal WebRTC api
+            try {
+                pc.addTransceiver('video', { direction: 'recvonly' });
+                pc.addTransceiver('audio', { direction: 'recvonly' });
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                const hostname = window.location.hostname;
+                const response = await fetch(`http://${hostname}:1984/api/webrtc?src=${safeName}_${quality}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/sdp' },
+                    body: offer.sdp
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text().catch(() => '');
+                    throw new Error(`go2rtc rejected stream (${response.status})${errText ? ': ' + errText.slice(0, 80) : ''}`);
+                }
+
+                const answerSdp = await response.text();
+                await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+                // 7. Timeout guard — if no video arrives within STREAM_TIMEOUT_MS, show error
+                setTimeout(() => {
+                    if (!streamReceived && pcs[safeName] === pc) {
+                        handleStreamFailure(safeName, quality, 'No video received — camera may be offline or on an unreachable subnet');
+                    }
+                }, STREAM_TIMEOUT_MS);
+
+            } catch (err) {
+                console.error(`[AURA] Stream connect failed for ${safeName}:`, err);
+                if (pcs[safeName] === pc) {
+                    handleStreamFailure(safeName, quality, err.message || 'Connection error');
+                }
+            }
+        }
+
+        function handleStreamFailure(safeName, quality, reason) {
+            // Close the dead peer connection
+            if (pcs[safeName]) {
+                try { pcs[safeName].close(); } catch(e) {}
+                delete pcs[safeName];
+            }
+
+            if (retryTimers[safeName]) {
+                clearTimeout(retryTimers[safeName]);
+                delete retryTimers[safeName];
+            }
+
+            retryCount[safeName] = (retryCount[safeName] || 0) + 1;
+
+            if (retryCount[safeName] <= MAX_RETRIES) {
+                // Capped backoff: 5s, 10s, 15s max
+                const delay = Math.min(15000, Math.pow(2, retryCount[safeName] - 1) * 5000);
+                const attempt = retryCount[safeName];
+                setStreamStatus(safeName, 'connecting', `RETRY ${attempt}/${MAX_RETRIES} in ${delay/1000}s...`);
+
+                retryTimers[safeName] = setTimeout(async () => {
+                    const currentTimer = retryTimers[safeName];
+                    retryCount[safeName] = attempt; // preserve count across reconnect
+                    // Disconnecting the peer connection already signals go2rtc to drop consumers.
+                    // We DO NOT DELETE the stream, otherwise go2rtc forgets the Wyze config URL forever!
+                    
+                    // Cancel if user clicked reload or another connection started during fetch
+                    if (retryTimers[safeName] !== currentTimer) return;
+                    
+                    connectStream(safeName, quality);
+                }, delay);
+            } else {
+                // All retries exhausted — show permanent error
+                setStreamStatus(safeName, 'error', reason || 'Stream unavailable');
+            }
+        }
+
+        // --- Stream UI Control Utilities ---
+        function setQuality(safeName, quality) {
+            // Re-negotiate WebRTC with the updated resolution stream name
+            connectStream(safeName, quality);
+            
+            const sdBtn = document.getElementById(`btn-sd-${safeName}`);
+            const hdBtn = document.getElementById(`btn-hd-${safeName}`);
+            
+            if (quality === 'sd') {
+                sdBtn.className = "px-2.5 py-1 rounded-md text-[var(--accent-text)] bg-[var(--accent-bg)] border border-[var(--accent-border)] font-bold transition-all duration-300 shadow-sm";
+                sdBtn.style.color = "var(--accent-text)";
+                sdBtn.style.borderColor = "var(--accent-border)";
+                sdBtn.style.backgroundColor = "var(--accent-bg)";
+                
+                hdBtn.className = "px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-300 font-semibold transition-all duration-300 border border-transparent";
+                hdBtn.style.color = "";
+                hdBtn.style.borderColor = "";
+                hdBtn.style.backgroundColor = "";
+            } else {
+                sdBtn.className = "px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-300 font-semibold transition-all duration-300 border border-transparent";
+                sdBtn.style.color = "";
+                sdBtn.style.borderColor = "";
+                sdBtn.style.backgroundColor = "";
+                
+                hdBtn.className = "px-2.5 py-1 rounded-md text-[var(--accent-text)] bg-[var(--accent-bg)] border border-[var(--accent-border)] font-bold transition-all duration-300 shadow-sm";
+                hdBtn.style.color = "var(--accent-text)";
+                hdBtn.style.borderColor = "var(--accent-border)";
+                hdBtn.style.backgroundColor = "var(--accent-bg)";
+            }
+        }
+
+        async function reloadStream(safeName) {
+            const sdBtn = document.getElementById(`btn-sd-${safeName}`);
+            // Check active based on styling classes rather than hardcoded colors
+            const isSd = sdBtn.style.color === "var(--accent-text)" || sdBtn.classList.contains("text-[var(--accent-text)]");
+            const quality = isSd ? 'sd' : 'hd';
+            // Reset retry counter so manual reload always gets fresh MAX_RETRIES attempts
+            retryCount[safeName] = 0;
+            
+            if (retryTimers[safeName]) {
+                clearTimeout(retryTimers[safeName]);
+                delete retryTimers[safeName];
+            }
+
+            setStreamStatus(safeName, 'connecting');
+
+            // 1. Close existing peer connection first so go2rtc sees no consumers
+            if (pcs[safeName]) {
+                try { pcs[safeName].close(); } catch (e) {}
+                delete pcs[safeName];
+            }
+            
+            // Hard reset the video element to break out of stuck black screens
+            const video = document.getElementById(`video-${safeName}`);
+            if (video) {
+                video.pause();
+                video.srcObject = null;
+                video.removeAttribute('src');
+                video.load();
+            }
+            
+            // We DO NOT DELETE the stream using /api/streams, otherwise go2rtc forgets the config forever!
+            
+            // Wait for go2rtc to register the dropped consumer before reconnecting
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            connectStream(safeName, quality);
+        }
+
+        function toggleFullscreen(safeName) {
+            const video = document.getElementById(`video-${safeName}`);
+            if (!video) return;
+            
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {
+                video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {
+                video.msRequestFullscreen();
+            }
+        }
+
+        // --- Grid Layout Customization ---
+        function setGridLayout(cols) {
+            const grid = document.getElementById('camera-grid');
+            if (!grid) return;
+            
+            // 1. Clean existing column and layout classes
+            grid.className = grid.className.replace(/grid-cols-\d|sm:grid-cols-\d|md:grid-cols-\d|lg:grid-cols-\d/g, '').trim();
+            
+            // 2. Add classes according to selected layout
+            grid.classList.add(`grid-cols-${cols}`);
+            
+            // 3. Highlight the active control button
+            const colOptions = ['1', '2', '3', '4', '5'];
+            colOptions.forEach(c => {
+                const btn = document.getElementById(`btn-grid-${c}`);
+                if (!btn) return;
+                if (c === cols) {
+                    btn.className = "py-2 rounded-lg text-center active-theme-btn border transition-all duration-300 font-semibold";
+                    btn.style.borderColor = "var(--accent-primary)";
+                } else {
+                    btn.className = "py-2 rounded-lg text-center border border-transparent text-slate-500 hover:text-slate-300 font-semibold transition-all duration-300";
+                    btn.style.borderColor = "";
+                }
+            });
+            
+            // 4. Persist preference to browser LocalStorage
+            localStorage.setItem('wyze_grid_layout', cols);
+
+            // 5. Dynamic tile span adjustment & clamping
+            applyTileSpans();
+        }
+
+        // --- Aspect Ratio Customization ---
+        function setAspectScheme(scheme) {
+            const grid = document.getElementById('camera-grid');
+            if (!grid) return;
+            
+            grid.classList.remove('aspect-scheme-fill', 'aspect-scheme-cover', 'aspect-scheme-contain');
+            grid.classList.add(`aspect-scheme-${scheme}`);
+            
+            // Highlight active button
+            const schemes = ['fill', 'cover', 'contain'];
+            schemes.forEach(s => {
+                const btn = document.getElementById(`btn-aspect-${s}`);
+                if (!btn) return;
+                if (s === scheme) {
+                    btn.className = "py-2 rounded-lg text-center active-theme-btn border transition-all duration-300 font-semibold";
+                    btn.style.borderColor = "var(--accent-primary)";
+                } else {
+                    btn.className = "py-2 rounded-lg text-center border border-transparent text-slate-500 hover:text-slate-300 font-semibold transition-all duration-300";
+                    btn.style.borderColor = "";
+                }
+            });
+            
+            localStorage.setItem('wyze_aspect_scheme', scheme);
+        }
+
+        // --- Personalization Accent Theme switcher ---
+        function setSystemTheme(theme) {
+            // Remove prior themes
+            document.body.classList.remove('theme-emerald', 'theme-cyan', 'theme-violet', 'theme-amber');
+            // Add new theme
+            document.body.classList.add(`theme-${theme}`);
+            
+            // Highlight active theme button
+            const themes = ['emerald', 'cyan', 'violet', 'amber'];
+            themes.forEach(t => {
+                const btn = document.getElementById(`btn-theme-${t}`);
+                if (!btn) return;
+                if (t === theme) {
+                    btn.className = "py-2 rounded-lg text-center active-theme-btn border transition-all duration-300 font-bold uppercase";
+                    btn.style.borderColor = "var(--accent-primary)";
+                } else {
+                    btn.className = "py-2 rounded-lg text-center border border-transparent text-slate-500 hover:text-slate-300 font-bold transition-all duration-300 uppercase";
+                    btn.style.borderColor = "";
+                }
+            });
+            
+            localStorage.setItem('wyze_system_theme', theme);
+        }
+
+        // --- System Operation Handlers ---
+        async function rebootStreamingEngine() {
+            const btn = document.getElementById('btn-reboot-streams');
+            if (!btn) return;
+            
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="h-3.5 w-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span><span class="ml-1.5">REBOOTING...</span>`;
+            
+            try {
+                const response = await fetch('/api/system/restart_streams', { method: 'POST' });
+                if (!response.ok) throw new Error('Restart streams request failed');
+                
+                // Re-negotiate WebRTC streams dynamically on the dashboard
+                const cards = document.querySelectorAll('.camera-card');
+                cards.forEach((card, index) => {
+                    const safeName = card.getAttribute('data-id');
+                    if (safeName) {
+                        const sdBtn = document.getElementById(`btn-sd-${safeName}`);
+                        const isSd = sdBtn && (sdBtn.style.color === "var(--accent-text)" || sdBtn.classList.contains("text-[var(--accent-text)]"));
+                        setTimeout(() => {
+                            connectStream(safeName, isSd ? 'sd' : 'hd');
+                        }, index * 2500);
+                    }
+                });
+                
+                // Visual feedback of success
+                btn.innerHTML = `<span>SUCCESS</span>`;
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }, 2000);
+                
+            } catch (err) {
+                console.error("Stream reboot error:", err);
+                btn.innerHTML = `<span class="text-red-400">ERROR</span>`;
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }, 3000);
+            }
+        }
+
+        async function shutdownAuraCore() {
+            if (!confirm("Are you sure you want to shut down the background Aura security server? All active local client screens and video feeds will be terminated.")) {
+                return;
+            }
+            
+            const btn = document.getElementById('btn-shutdown-server');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="h-3.5 w-3.5 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></span><span class="ml-1.5">EXITING...</span>`;
+            }
+            
+            try {
+                // Send shutdown request to API
+                await fetch('/api/system/shutdown', { method: 'POST' });
+                
+                // Hide Settings Modal immediately
+                toggleSettingsModal();
+                
+                // Trigger transition overlay
+                const overlay = document.getElementById('shutdown-overlay');
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                    overlay.offsetHeight; // trigger reflow
+                    overlay.classList.add('opacity-100');
+                }
+                
+            } catch (err) {
+                console.error("Shutdown error:", err);
+                alert("Failed to send shutdown command to server.");
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>SHUTDOWN CORE</span>`;
+                }
+            }
+        }
+
+        // --- Dynamic Camera Tile Sizing and Direct Drag-to-Resize ---
+        function getTileSpans() {
+            const saved = localStorage.getItem('wyze_tile_spans');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    console.error("Failed to parse tile spans:", e);
+                }
+            }
+            return {};
+        }
+
+        function saveTileSpan(safeName, span) {
+            const spans = getTileSpans();
+            spans[safeName] = parseInt(span, 10);
+            localStorage.setItem('wyze_tile_spans', JSON.stringify(spans));
+        }
+
+        function applyTileSpans() {
+            const grid = document.getElementById('camera-grid');
+            if (!grid) return;
+            
+            // Determine active grid columns count
+            let gridCols = 3;
+            const match = grid.className.match(/grid-cols-(\d)/);
+            if (match) {
+                gridCols = parseInt(match[1], 10);
+            }
+            
+            const spans = getTileSpans();
+            const cards = document.querySelectorAll('.camera-card');
+            
+            cards.forEach(card => {
+                const safeName = card.getAttribute('data-id');
+                if (!safeName) return;
+                
+                let span = spans[safeName] || 1;
+                // Enforce layout constraints by clamping spans to the grid's columns count
+                if (span > gridCols) {
+                    span = gridCols;
+                }
+                
+                // Clear any existing col-span-* classes and add target span
+                card.className = card.className.replace(/col-span-\d/g, '').trim();
+                card.classList.add(`col-span-${span}`);
+                
+                // Keep the readout labels in sync
+                const label = document.getElementById(`span-val-${safeName}`);
+                if (label) {
+                    label.textContent = `${span} ${span === 1 ? 'COL' : 'COLS'}`;
+                }
+            });
+        }
+
+        // --- Tile Span Persistency via Buttons ---
+        function cycleSpan(safeName) {
+            const grid = document.getElementById('camera-grid');
+            if (!grid) return;
+            
+            let gridCols = 3;
+            const match = grid.className.match(/grid-cols-(\d)/);
+            if (match) {
+                gridCols = parseInt(match[1], 10);
+            }
+            
+            const spans = getTileSpans();
+            let currentSpan = spans[safeName] || 1;
+            
+            let nextSpan = currentSpan + 1;
+            if (nextSpan > gridCols) {
+                nextSpan = 1;
+            }
+            
+            saveTileSpan(safeName, nextSpan);
+            applyTileSpans();
+            
+            // Auto-switch to HD if span > 1
+            const targetQuality = nextSpan > 1 ? 'hd' : 'sd';
+            const sdBtn = document.getElementById(`btn-sd-${safeName}`);
+            const isCurrentlySd = sdBtn && (sdBtn.style.color === "var(--accent-text)" || sdBtn.classList.contains("text-[var(--accent-text)]"));
+            const currentQuality = isCurrentlySd ? 'sd' : 'hd';
+            if (currentQuality !== targetQuality) {
+                setQuality(safeName, targetQuality);
+            }
+        }
+
+        // Direct Drag-to-Resize Controller State & Handlers
+        let isResizing = false;
+        let startX = 0;
+        let startSpan = 1;
+        let activeCard = null;
+        let colWidth = 0;
+        let gridCols = 3;
+        let activeSafeName = '';
+
+        function startResizeDrag(e, safeName) {
+            e.preventDefault();
+            e.stopPropagation(); // Avoid triggering reordering drag drop
+            
+            activeCard = document.querySelector(`.camera-card[data-id="${safeName}"]`);
+            if (!activeCard) return;
+            
+            activeSafeName = safeName;
+            isResizing = true;
+            startX = e.clientX;
+            
+            const grid = document.getElementById('camera-grid');
+            const gridWidth = grid.getBoundingClientRect().width;
+            
+            gridCols = 3;
+            const match = grid.className.match(/grid-cols-(\d)/);
+            if (match) {
+                gridCols = parseInt(match[1], 10);
+            }
+            
+            colWidth = gridWidth / gridCols;
+            
+            const spanMatch = activeCard.className.match(/col-span-(\d)/);
+            startSpan = spanMatch ? parseInt(spanMatch[1], 10) : 1;
+            
+            // Add aesthetic visual indicator during active resize
+            activeCard.classList.add('ring-2', 'ring-[var(--accent-primary)]', 'z-30');
+            
+            document.addEventListener('mousemove', handleResizeMove);
+            document.addEventListener('mouseup', handleResizeEnd);
+        }
+
+        function handleResizeMove(e) {
+            if (!isResizing || !activeCard) return;
+            
+            const deltaX = e.clientX - startX;
+            const spanChange = Math.round(deltaX / colWidth);
+            let targetSpan = startSpan + spanChange;
+            
+            targetSpan = Math.max(1, Math.min(gridCols, targetSpan));
+            
+            // Apply live change in DOM
+            activeCard.className = activeCard.className.replace(/col-span-\d/g, '').trim();
+            activeCard.classList.add(`col-span-${targetSpan}`);
+            
+            // Synchronize overlay elements
+            const slider = document.getElementById(`span-slider-${activeSafeName}`);
+            if (slider) {
+                slider.value = targetSpan;
+            }
+            const label = document.getElementById(`span-val-${activeSafeName}`);
+            if (label) {
+                label.textContent = `${targetSpan} ${targetSpan === 1 ? 'COL' : 'COLS'}`;
+            }
+        }
+
+        function handleResizeEnd(e) {
+            if (!isResizing) return;
+            isResizing = false;
+            
+            if (activeCard) {
+                activeCard.classList.remove('ring-2', 'ring-[var(--accent-primary)]', 'z-30');
+                
+                const spanMatch = activeCard.className.match(/col-span-(\d)/);
+                const finalSpan = spanMatch ? parseInt(spanMatch[1], 10) : 1;
+                
+                saveTileSpan(activeSafeName, finalSpan);
+                
+                // Auto-switch to HD if span > 1
+                const targetQuality = finalSpan > 1 ? 'hd' : 'sd';
+                const sdBtn = document.getElementById(`btn-sd-${activeSafeName}`);
+                const isCurrentlySd = sdBtn && (sdBtn.style.color === "var(--accent-text)" || sdBtn.classList.contains("text-[var(--accent-text)]"));
+                const currentQuality = isCurrentlySd ? 'sd' : 'hd';
+                if (currentQuality !== targetQuality) {
+                    setQuality(activeSafeName, targetQuality);
+                }
+            }
+            
+            document.removeEventListener('mousemove', handleResizeMove);
+            document.removeEventListener('mouseup', handleResizeEnd);
+        }
+
+        // --- Settings Modal Toggle ---
+        function toggleSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            if (!modal) return;
+            
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                // Trigger reflow for animation
+                modal.offsetHeight;
+                modal.classList.add('opacity-100');
+                modal.firstElementChild.classList.remove('translate-y-4');
+                modal.firstElementChild.classList.add('translate-y-0');
+            } else {
+                modal.classList.remove('opacity-100');
+                modal.firstElementChild.classList.remove('translate-y-0');
+                modal.firstElementChild.classList.add('translate-y-4');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Initialize and Restore Grid Position and WebRTC Streams on Startup
+        document.addEventListener('DOMContentLoaded', () => {
+            // Restore saved theme color first
+            const savedTheme = localStorage.getItem('wyze_system_theme') || 'emerald';
+            setSystemTheme(savedTheme);
+
+            // Restore saved layout
+            const savedLayout = localStorage.getItem('wyze_grid_layout') || '3';
+            setGridLayout(savedLayout);
+
+            // Restore saved aspect scheme
+            const savedAspect = localStorage.getItem('wyze_aspect_scheme') || 'contain';
+            setAspectScheme(savedAspect);
+
+            restoreCameraOrder();
+            
+            // Restore dynamic camera tile spans
+            applyTileSpans();
+            
+            // Connect cameras via WebRTC, default to HD if span > 1
+            const spans = getTileSpans();
+            const cards = document.querySelectorAll('.camera-card');
+            cards.forEach((card, index) => {
+                const safeName = card.getAttribute('data-id');
+                if (safeName) {
+                    const span = spans[safeName] || 1;
+                    const defaultQuality = span > 1 ? 'hd' : 'sd';
+                    setTimeout(() => {
+                        setQuality(safeName, defaultQuality);
+                    }, index * 2500);
+                }
+            });
+
+            // --- Stream Frozen Watchdog ---
+            const lastVideoTimes = {};
+            setInterval(() => {
+                const allCards = document.querySelectorAll('.camera-card');
+                allCards.forEach(card => {
+                    const safeName = card.getAttribute('data-id');
+                    if (!safeName) return;
+                    
+                    const video = document.getElementById(`video-${safeName}`);
+                    const statusEl = document.getElementById(`status-connecting-${safeName}`);
+                    const isConnecting = statusEl && !statusEl.classList.contains('hidden');
+                    const errorEl = document.getElementById(`status-error-${safeName}`);
+                    const isError = errorEl && !errorEl.classList.contains('hidden');
+                    
+                    // Only check if it's supposed to be playing (not actively connecting or errored out)
+                    if (video && !video.paused && !isConnecting && !isError && video.readyState >= 2) {
+                        const state = lastVideoTimes[safeName] || { time: -1, timestamp: Date.now() };
+                        if (state.time === video.currentTime) {
+                            // Video time hasn't changed. If it stays the same for 10 seconds, it's frozen.
+                            if (Date.now() - state.timestamp > 10000) {
+                                console.log(`[AURA] Watchdog detected frozen stream for ${safeName}. Reloading...`);
+                                lastVideoTimes[safeName] = { time: -1, timestamp: Date.now() };
+                                reloadStream(safeName);
+                            }
+                        } else {
+                            // Video has advanced, update last known time
+                            lastVideoTimes[safeName] = { time: video.currentTime, timestamp: Date.now() };
+                        }
+                    } else {
+                        lastVideoTimes[safeName] = { time: -1, timestamp: Date.now() };
+                    }
+                });
+            }, 3000);
+
+            // --- PC Sleep/Wake Detection ---
+            // Periodically check if the time elapsed is significantly larger than the interval
+            // which indicates the computer went to sleep or the tab was suspended.
+            let lastTime = Date.now();
+            setInterval(() => {
+                const currentTime = Date.now();
+                // If more than 30 seconds have passed between a 2-second interval, we probably just woke up
+                if (currentTime - lastTime > 30000) {
+                    console.log("[AURA] Wake-up detected. Reloading streams...");
+                    
+                    // Reload all camera streams
+                    const allCards = document.querySelectorAll('.camera-card');
+                    allCards.forEach((card, index) => {
+                        const safeName = card.getAttribute('data-id');
+                        if (safeName) {
+                            setTimeout(() => {
+                                reloadStream(safeName);
+                            }, index * 2500);
+                        }
+                    });
+                }
+                lastTime = currentTime;
+            }, 2000);
+        });
+    </script>
+
+</body>
+</html>
